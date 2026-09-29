@@ -852,8 +852,26 @@ import { HealthController } from './health/health.controller';
 export class AppModule {}
 ```
 
+**⚠️ Bug found only once a real frontend called the running dev server
+(during Plan 2/Site, not during Plan 1 itself — Jest-based e2e tests
+never exercise `main.ts`, they build the Nest app directly from
+`AppModule` inside `test/*.e2e-spec.ts`, and those load `.env` via
+`test/jest.setup.ts`; the Docker path also never needed it, since
+`docker-compose.yml` injects env vars directly into `process.env`
+without a `.env` file):** `main.ts` never loaded `.env` on its own. A
+plain `pnpm dev` / `node dist/src/main.js` run outside both of those
+paths had every `process.env.*` read in the app come back `undefined`
+— `CORS_ORIGINS` silently became `[]`, so the browser's preflight for
+`POST /api/leads` (and `/api/reviews`) failed with no
+`Access-Control-Allow-Origin` header, while GET requests kept working
+because Nuxt's SSR fetches run server-to-server and never hit the
+browser's CORS layer at all — that's what made it look like only
+"some" endpoints were broken. Fix: load dotenv explicitly at the very
+top of `main.ts`, same as `prisma.config.ts` already does.
+
 ```typescript
 // apps/backend/src/main.ts
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';

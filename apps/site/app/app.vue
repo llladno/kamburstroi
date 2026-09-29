@@ -5,5 +5,6 @@
       <NuxtPage />
     </main>
     <SiteFooter />
+    <LeadFormModal />
   </div>
 </template>
