@@ -876,6 +876,14 @@ git commit -m "feat(backend): global error shape + rate limiting"
 
 ## Task 5: Auth module (admin login + JWT guard)
 
+**⚠️ Version pinning note (discovered during execution):** `pnpm add
+@nestjs/jwt @nestjs/passport` installs their `latest` tags (12.x), which
+are published as **ESM-only** (`"type": "module"`) — Jest's CJS
+`require()` cannot load them and the test suite fails with `Must use
+import to load ES Module`. Both packages' 12.x line targets NestJS 12;
+since this plan pins NestJS 11, install their **11.x** lines explicitly
+instead (still plain CJS, no config workaround needed).
+
 **Files:**
 - Create: `apps/backend/src/auth/dto/login.dto.ts`
 - Create: `apps/backend/src/auth/auth.service.ts`
@@ -884,7 +892,7 @@ git commit -m "feat(backend): global error shape + rate limiting"
 - Create: `apps/backend/src/auth/jwt-auth.guard.ts`
 - Create: `apps/backend/src/auth/auth.module.ts`
 - Create: `apps/backend/prisma/seed.ts`
-- Modify: `apps/backend/package.json` (add `prisma.seed` config)
+- Modify: `apps/backend/prisma.config.ts` (add `migrations.seed`)
 - Modify: `apps/backend/src/app.module.ts`
 - Test: `apps/backend/test/auth.e2e-spec.ts`
 
@@ -896,12 +904,17 @@ git commit -m "feat(backend): global error shape + rate limiting"
   `prisma/seed.ts` creates the one `AdminUser` from `ADMIN_LOGIN` /
   `ADMIN_PASSWORD` env vars if it doesn't already exist.
 
-- [ ] **Step 1: Install auth deps**
+- [ ] **Step 1: Install auth deps, pinning `@nestjs/jwt` and
+  `@nestjs/passport` to their NestJS-11-compatible CJS line**
 
 ```bash
-pnpm --filter backend add @nestjs/passport @nestjs/jwt passport passport-jwt bcryptjs
-pnpm --filter backend add -D @types/passport-jwt @types/bcryptjs
+pnpm --filter backend add @nestjs/passport@11 @nestjs/jwt@11 passport passport-jwt bcryptjs
+pnpm --filter backend add -D @types/passport-jwt
 ```
+
+(`@types/bcryptjs` is intentionally **not** installed — `bcryptjs` ships
+its own types since v3 and pnpm prints a deprecation warning if you add
+the old `@types/bcryptjs` package on top of it.)
 
 - [ ] **Step 2: Write the failing e2e test**
 
@@ -1129,14 +1142,19 @@ import { AuthModule } from './auth/auth.module';
 export class AppModule {}
 ```
 
-- [ ] **Step 9: Seed script for the one admin account**
+- [ ] **Step 9: Seed script for the one admin account** (uses the same
+  `PrismaPg` driver adapter as `PrismaService`, Task 3 — a bare `new
+  PrismaClient()` fails under Prisma 7 the same way it would in the app)
 
 ```typescript
 // apps/backend/prisma/seed.ts
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const login = process.env.ADMIN_LOGIN;
@@ -1165,14 +1183,19 @@ main()
   .finally(() => prisma.$disconnect());
 ```
 
-Add to `apps/backend/package.json`:
+Register the seed command in `prisma.config.ts` (**not**
+`package.json`'s `prisma.seed` — Prisma 7 moved this too):
 
-```json
-{
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  }
-}
+```typescript
+// apps/backend/prisma.config.ts — add `seed` inside `migrations`
+export default defineConfig({
+  schema: 'prisma/schema.prisma',
+  migrations: {
+    path: 'prisma/migrations',
+    seed: 'ts-node prisma/seed.ts',
+  },
+  datasource: { url: env('DATABASE_URL') },
+});
 ```
 
 - [ ] **Step 10: Run the e2e test again to verify it passes**
