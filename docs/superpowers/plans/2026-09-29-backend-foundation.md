@@ -2602,8 +2602,6 @@ describe('Objects (e2e)', () => {
       .get(`/api/objects/${created.body.slug}`)
       .expect(200);
     expect(publicDetail.body.title).toBe('Ремонт квартиры на Ленина');
-
-    return created;
   });
 
   it('manages a gallery: add, set cover, reorder, remove', async () => {

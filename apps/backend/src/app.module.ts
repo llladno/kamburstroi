@@ -9,6 +9,7 @@ import { SettingsModule } from './settings/settings.module';
 import { ServicesModule } from './services/services.module';
 import { AdvantagesModule } from './advantages/advantages.module';
 import { TeamModule } from './team/team.module';
+import { ObjectsModule } from './objects/objects.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TeamModule } from './team/team.module';
     ServicesModule,
     AdvantagesModule,
     TeamModule,
+    ObjectsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
