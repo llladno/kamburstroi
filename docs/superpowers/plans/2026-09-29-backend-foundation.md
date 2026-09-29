@@ -263,6 +263,16 @@ import { HealthController } from './health/health.controller';
 export class AppModule {}
 ```
 
+- [ ] **Step 4b: Install `class-validator`/`class-transformer`**
+
+`ValidationPipe` needs these as peer deps even for the trivial health
+check test — install them now rather than hitting a runtime
+`PackageLoader` error:
+
+```bash
+pnpm --filter backend add class-validator class-transformer
+```
+
 - [ ] **Step 5: Set global prefix and validation pipe in `main.ts`**
 
 ```typescript
