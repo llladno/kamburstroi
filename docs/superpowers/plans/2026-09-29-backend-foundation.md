@@ -1239,20 +1239,28 @@ git commit -m "feat(backend): admin auth (JWT login + guard) and admin seed scri
 
 ```bash
 pnpm --filter backend add sharp multer uuid
-pnpm --filter backend add -D @types/multer @types/uuid
+pnpm --filter backend add -D @types/multer
 ```
+
+`uuid` (v9+) ships its own types, same as `bcryptjs` — don't add
+`@types/uuid` on top of it (pnpm warns it's deprecated and it's
+redundant). In practice `image-processor.service.ts` below ends up using
+Node's built-in `crypto.randomUUID()` instead of the `uuid` package, so
+`uuid` is installed but unused by this task — harmless, and a later task
+may still want it.
 
 - [ ] **Step 2: Write the failing unit test for the processor**
 
 ```typescript
 // apps/backend/src/uploads/image-processor.service.spec.ts
 import * as fs from 'fs';
-import * as path from 'os';
+import * as os from 'os';
+import * as path from 'path';
 import { ImageProcessorService } from './image-processor.service';
 import sharp from 'sharp';
 
 describe('ImageProcessorService', () => {
-  const uploadsDir = require('fs').mkdtempSync(require('path').join(path.tmpdir(), 'uploads-'));
+  const uploadsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'uploads-'));
   const service = new ImageProcessorService();
 
   beforeAll(() => {
@@ -1335,6 +1343,12 @@ import * as bcrypt from 'bcryptjs';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 
+// A minimal valid 1×1 PNG, base64-encoded, so `sharp` can actually decode it.
+const ONE_BY_ONE_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+  'base64',
+);
+
 describe('Uploads (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -1371,26 +1385,13 @@ describe('Uploads (e2e)', () => {
     const res = await request(app.getHttpServer())
       .post('/api/admin/uploads')
       .set('Authorization', `Bearer ${token}`)
-      .attach('file', Buffer.from([137, 80, 78, 71]), 'tiny.png'); // not a full valid PNG on purpose fails? see note below
+      .attach('file', ONE_BY_ONE_PNG, 'tiny.png');
 
-    // NOTE: a minimal valid 1x1 PNG buffer is used in the real test file below.
     expect(res.status).toBe(201);
     expect(res.body.url).toEqual(expect.stringContaining('/uploads/'));
   });
 });
 ```
-
-Replace the placeholder 4-byte buffer with a real minimal 1×1 PNG so
-`sharp` can decode it:
-
-```typescript
-const ONE_BY_ONE_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-  'base64',
-);
-```
-
-and use `.attach('file', ONE_BY_ONE_PNG, 'tiny.png')` in the test above.
 
 - [ ] **Step 5b: Run it to verify it fails**
 
