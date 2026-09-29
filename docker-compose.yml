@@ -34,11 +34,21 @@ services:
     volumes:
       - uploads_data:/app/uploads
 
+  site:
+    build:
+      context: .
+      dockerfile: apps/site/Dockerfile
+    restart: unless-stopped
+    environment:
+      NUXT_PUBLIC_API_BASE: https://api.${DOMAIN}/api
+      NITRO_PORT: 3000
+
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
     depends_on:
       - backend
+      - site
     ports:
       - "80:80"
     volumes:
