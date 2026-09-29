@@ -2204,7 +2204,10 @@ git commit -m "feat(backend): advantages CRUD module"
 
 Same pattern again, for `TeamMember` (has an optional `photoUrl` field —
 the URL comes from `POST /api/admin/uploads`, Task 6; this module does
-not process images itself).
+not process images itself). Note `@IsUrl({ require_tld: false })` below,
+not bare `@IsUrl()` — class-validator's default rejects `localhost` URLs
+(no TLD), which is exactly what dev/test uploads produce; the same fix
+applies to `Review.photoUrl` in Task 12.
 
 **Files:**
 - Create: `apps/backend/src/team/dto/create-team-member.dto.ts`
@@ -2298,7 +2301,7 @@ import { IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, Min } from 'class-valid
 export class CreateTeamMemberDto {
   @IsString() @IsNotEmpty() name: string;
   @IsString() @IsNotEmpty() role: string;
-  @IsOptional() @IsUrl() photoUrl?: string;
+  @IsOptional() @IsUrl({ require_tld: false }) photoUrl?: string;
   @IsOptional() @IsInt() @Min(0) order?: number;
 }
 ```
@@ -3059,7 +3062,7 @@ export class CreateReviewDto {
   @IsString() @IsNotEmpty() name: string;
   @IsInt() @Min(1) @Max(5) rating: number;
   @IsString() @IsNotEmpty() text: string;
-  @IsOptional() @IsUrl() photoUrl?: string;
+  @IsOptional() @IsUrl({ require_tld: false }) photoUrl?: string;
   @IsOptional() @IsString() projectId?: string;
 }
 ```
