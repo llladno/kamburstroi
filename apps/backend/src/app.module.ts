@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { SettingsModule } from './settings/settings.module';
 import { ServicesModule } from './services/services.module';
+import { AdvantagesModule } from './advantages/advantages.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ServicesModule } from './services/services.module';
     UploadsModule,
     SettingsModule,
     ServicesModule,
+    AdvantagesModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
