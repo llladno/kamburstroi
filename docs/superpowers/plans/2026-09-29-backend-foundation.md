@@ -1101,10 +1101,19 @@ export class AuthController {
 
 - [ ] **Step 7: Module**
 
+**⚠️ Note (caught only by `nest build`'s full type-check, not by
+`ts-jest`):** `JwtSignOptions['expiresIn']` is typed as `number |
+StringValue | undefined` (a branded template-literal type from the `ms`
+package), not plain `string` — `process.env.JWT_EXPIRES_IN ?? '7d'`
+evaluates to type `string`, which TypeScript rejects. `ts-jest` doesn't
+catch this because Jest doesn't run a full `tsc`-level check by default,
+so this only surfaces when you actually run `pnpm --filter backend
+build` (or Task 15's Docker build, which does). Cast it:
+
 ```typescript
 // apps/backend/src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -1115,7 +1124,9 @@ import { JwtStrategy } from './jwt.strategy';
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'change-me-in-production',
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN ?? '7d' },
+      signOptions: {
+        expiresIn: (process.env.JWT_EXPIRES_IN ?? '7d') as JwtSignOptions['expiresIn'],
+      },
     }),
   ],
   controllers: [AuthController],
@@ -1124,6 +1135,11 @@ import { JwtStrategy } from './jwt.strategy';
 })
 export class AuthModule {}
 ```
+
+**Takeaway for later tasks:** run `pnpm --filter backend build` at
+least once before Task 15 (ideally right after Task 5, since that's
+where this specific error lives) — `ts-jest`-based test runs alone will
+not catch full-project type errors.
 
 - [ ] **Step 8: Register in `AppModule`**
 
@@ -3780,12 +3796,34 @@ git commit -m "feat(backend): telegram bot (/start) + lead/review notifications"
 
 - [ ] **Step 1: Multi-stage `Dockerfile`**
 
+**⚠️ Two corrections (discovered by actually building and booting the
+image, not just reading docs):**
+
+1. **Don't try to `pnpm install --prod` a second time in the runtime
+   stage and selectively copy `node_modules/.prisma`.** Under Prisma 7 +
+   pnpm, the generated client isn't a loose folder at
+   `node_modules/.prisma/client` — it lives inside pnpm's content-addressed
+   store (`node_modules/.pnpm/@prisma+client@.../node_modules/@prisma/client`),
+   reached through symlinks from both the root and `apps/backend`
+   `node_modules`. A prod-only reinstall also can't run `prisma generate`
+   itself (`prisma` the CLI is a devDependency, excluded by `--prod`). The
+   reliable fix is simpler than fighting the pnpm store layout: copy the
+   **entire** `node_modules` (root and `apps/backend`) straight from the
+   build stage into the runtime stage. The image is a bit larger
+   (devDependencies included), which is an acceptable trade for
+   correctness at this project's scale.
+2. **The compiled entrypoint is `dist/src/main.js`, not `dist/main.js`.**
+   This project's `tsconfig.json`/`nest-cli.json` (from the Task 2
+   scaffold) preserves the `src/` folder inside `dist/` — verify with
+   `find apps/backend/dist -name main.js` after a local `pnpm --filter
+   backend build` if this ever changes.
+
 ```dockerfile
 # apps/backend/Dockerfile
 FROM node:24-alpine AS build
 WORKDIR /app
 RUN corepack enable
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/backend/package.json apps/backend/package.json
 RUN pnpm install --frozen-lockfile --filter backend...
 COPY apps/backend apps/backend
@@ -3794,17 +3832,20 @@ RUN pnpm --filter backend build
 
 FROM node:24-alpine AS runtime
 WORKDIR /app
-RUN corepack enable
 ENV NODE_ENV=production
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json /app/pnpm-workspace.yaml ./
+COPY --from=build /app/apps/backend/node_modules apps/backend/node_modules
 COPY --from=build /app/apps/backend/package.json apps/backend/package.json
-RUN pnpm install --frozen-lockfile --prod --filter backend...
 COPY --from=build /app/apps/backend/dist apps/backend/dist
 COPY --from=build /app/apps/backend/prisma apps/backend/prisma
-COPY --from=build /app/apps/backend/node_modules/.prisma apps/backend/node_modules/.prisma
 EXPOSE 3000
-CMD ["node", "apps/backend/dist/main.js"]
+CMD ["node", "apps/backend/dist/src/main.js"]
 ```
+
+**Note:** `pnpm-lock.yaml` must be copied into the build stage too (it
+didn't exist as a copy step in an earlier draft of this Dockerfile) —
+`--frozen-lockfile` fails immediately without it being present.
 
 - [ ] **Step 2: `.dockerignore`**
 
