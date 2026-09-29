@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  login        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@map("admin_users")
+}
+
+model TelegramSubscriber {
+  id        String   @id @default(uuid())
+  chatId    String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("telegram_subscribers")
+}
+
+model SiteSettings {
+  id                    Int      @id @default(1)
+  heroTitle             String   @default("")
+  heroSubtitle          String   @default("")
+  aboutText             String   @default("")
+  yearsOfExperience     Int      @default(0)
+  completedObjectsCount Int      @default(0)
+  warrantyMonths        Int      @default(0)
+  phone                 String   @default("")
+  email                 String   @default("")
+  workHours             String   @default("")
+  vkUrl                 String   @default("")
+  updatedAt             DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("services")
+}
+
+model Advantage {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("advantages")
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  name      String
+  role      String
+  photoUrl  String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("team_members")
+}
+
+/// Business entity is "объект" (renovation project). Named `Project` in
+/// Prisma/TS to avoid colliding with the global TS `Object` type — see
+/// "Naming note" in the plan's Global Constraints. REST routes and DTOs
+/// still use "object" terminology.
+model Project {
+  id          String         @id @default(uuid())
+  slug        String         @unique
+  title       String
+  workType    String
+  description String
+  year        Int
+  isPublished Boolean        @default(false)
+  isFeatured  Boolean        @default(false)
+  order       Int            @default(0)
+  images      ProjectImage[]
+  reviews     Review[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("objects")
+}
+
+model ProjectImage {
+  id        String  @id @default(uuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url       String
+  order     Int     @default(0)
+  isCover   Boolean @default(false)
+
+  @@map("object_images")
+}
+
+enum ReviewStatus {
+  pending
+  approved
+  rejected
+  hidden
+}
+
+model Review {
+  id        String       @id @default(uuid())
+  name      String
+  rating    Int
+  text      String
+  photoUrl  String?
+  projectId String?
+  project   Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  status    ReviewStatus @default(pending)
+  createdAt DateTime     @default(now())
+
+  @@map("reviews")
+}
+
+model Lead {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String
+  comment     String?
+  isProcessed Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@map("leads")
+}

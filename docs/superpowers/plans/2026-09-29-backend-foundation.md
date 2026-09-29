@@ -73,7 +73,9 @@ passport-jwt, bcryptjs, multer + sharp, grammY 1.46, @nestjs/throttler.
 **Interfaces:**
 - Produces: a pnpm workspace with an `apps/` and `packages/` directory
   convention that Task 2 (backend app) will populate, and a local Postgres
-  instance reachable at `localhost:5433` for development/tests.
+  instance reachable at `localhost:55432` for development/tests (55432
+  rather than the more common 5433, which collided with a local SSH
+  tunnel in the reference environment).
 
 - [ ] **Step 1: Create root `package.json`**
 
@@ -134,7 +136,7 @@ services:
       POSTGRES_PASSWORD: kambyrstroi_dev
       POSTGRES_DB: kambyrstroi
     ports:
-      - "5433:5432"
+      - "55432:5432"
     volumes:
       - kambyrstroi_pg_dev:/var/lib/postgresql
 
@@ -299,7 +301,7 @@ bootstrap();
 ```bash
 # apps/backend/.env.example
 PORT=3000
-DATABASE_URL="postgresql://kambyrstroi:kambyrstroi_dev@localhost:5433/kambyrstroi?schema=public"
+DATABASE_URL="postgresql://kambyrstroi:kambyrstroi_dev@localhost:55432/kambyrstroi?schema=public"
 JWT_SECRET="change-me-in-production"
 JWT_EXPIRES_IN="7d"
 ADMIN_LOGIN="admin"
@@ -330,10 +332,26 @@ git commit -m "feat(backend): scaffold NestJS app with health endpoint"
 
 ## Task 3: Prisma schema + PrismaService
 
+**⚠️ Prisma ORM 7 architecture note (discovered during execution, not
+obvious from the docs at plan-writing time):** Prisma 7 removed the
+`datasource.url` field from `schema.prisma` entirely, moved the
+connection string to a new `prisma.config.ts` file (used by the CLI for
+migrations), and now **requires a driver adapter** to be passed to
+`PrismaClient` at runtime for every database, including PostgreSQL —
+there is no more "just reads `DATABASE_URL` from the schema" mode. This
+task's steps below reflect that: they install `@prisma/adapter-pg` +
+`pg` + `dotenv`, add `prisma.config.ts`, and construct `PrismaService`
+with a `PrismaPg` adapter instead of a bare `new PrismaClient()`.
+
 **Files:**
 - Create: `apps/backend/prisma/schema.prisma`
+- Create: `apps/backend/prisma.config.ts`
 - Create: `apps/backend/src/prisma/prisma.service.ts`
 - Create: `apps/backend/src/prisma/prisma.module.ts`
+- Create: `apps/backend/test/jest.setup.ts`
+- Modify: `apps/backend/test/jest-e2e.json` (add `setupFiles`)
+- Modify: `apps/backend/package.json` (add `setupFiles` to the inline
+  unit-test jest config)
 - Test: `apps/backend/src/prisma/prisma.service.spec.ts`
 
 **Interfaces:**
@@ -344,15 +362,37 @@ git commit -m "feat(backend): scaffold NestJS app with health endpoint"
   `TelegramSubscriber`, `SiteSettings`, `Service`, `Advantage`,
   `TeamMember`, `Project`, `ProjectImage`, `Review` (+ `ReviewStatus`
   enum), `Lead`.
+- Every unit and e2e test from here on relies on `apps/backend/test/
+  jest.setup.ts` loading `.env` before any test file runs — without it,
+  `PrismaService`'s constructor (which reads `process.env.DATABASE_URL`
+  synchronously to build the adapter) throws immediately.
 
-- [ ] **Step 1: Install Prisma**
+- [ ] **Step 1: Install Prisma + the Postgres driver adapter**
 
 ```bash
-pnpm --filter backend add @prisma/client@7
-pnpm --filter backend add -D prisma@7
+pnpm --filter backend add @prisma/client@7 @prisma/adapter-pg pg dotenv
+pnpm --filter backend add -D prisma@7 @types/pg
 ```
 
-- [ ] **Step 2: Write the full schema**
+pnpm may print `[ERR_PNPM_IGNORED_BUILDS]` for `@prisma/engines`/`prisma`
+(their postinstall scripts are blocked by default). Fix it by adding
+both to `allowBuilds: true` in the root `pnpm-workspace.yaml`, then
+re-run `pnpm install`:
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  prisma: true
+  unrs-resolver: true
+```
+
+- [ ] **Step 2: Write the full schema (note: no `url` in `datasource` —
+  that lives in `prisma.config.ts`, Step 2b)**
 
 ```prisma
 // apps/backend/prisma/schema.prisma
@@ -362,7 +402,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model AdminUser {
@@ -499,14 +538,37 @@ model Lead {
 }
 ```
 
+- [ ] **Step 2b: Create `prisma.config.ts`** (repo root of the backend
+  app — this is what the CLI reads the connection string from now)
+
+```typescript
+// apps/backend/prisma.config.ts
+import 'dotenv/config';
+import { defineConfig, env } from 'prisma/config';
+
+export default defineConfig({
+  schema: 'prisma/schema.prisma',
+  migrations: {
+    path: 'prisma/migrations',
+  },
+  datasource: {
+    url: env('DATABASE_URL'),
+  },
+});
+```
+
 - [ ] **Step 3: Run the first migration**
 
 ```bash
 cd apps/backend
 pnpm exec prisma migrate dev --name init
 ```
-Expected: migration applies cleanly against the Task 1 Postgres, Prisma
-Client is generated.
+Expected: `Loaded Prisma config from prisma.config.ts.` then the
+migration applies cleanly against the Task 1 Postgres and Prisma Client
+is generated. If it instead errors with `Authentication failed`, check
+nothing else on the host is already listening on the Postgres port
+(Task 1's note about port 55432 vs. 5433) before assuming the
+credentials are wrong.
 
 - [ ] **Step 4: Write the failing test for `PrismaService`**
 
@@ -535,15 +597,63 @@ describe('PrismaService', () => {
 Run: `pnpm --filter backend test -- prisma.service.spec.ts`
 Expected: FAIL (`Cannot find module './prisma.service'`)
 
-- [ ] **Step 5: Implement `PrismaService` and `PrismaModule`**
+- [ ] **Step 4c: Add a jest setup file that loads `.env` before tests
+  run** — required because `PrismaService`'s constructor (Step 5) reads
+  `process.env.DATABASE_URL` synchronously, and neither jest config
+  loads `.env` on its own.
+
+```typescript
+// apps/backend/test/jest.setup.ts
+import * as path from 'path';
+import { config } from 'dotenv';
+
+config({ path: path.resolve(__dirname, '../.env') });
+```
+
+Wire it into both jest configs:
+
+```json
+// apps/backend/test/jest-e2e.json — add "setupFiles"
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "setupFiles": ["<rootDir>/jest.setup.ts"],
+  "transform": { "^.+\\.(t|j)s$": "ts-jest" }
+}
+```
+
+```json
+// apps/backend/package.json — inline "jest" config, add "setupFiles"
+"jest": {
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "src",
+  "testRegex": ".*\\.spec\\.ts$",
+  "setupFiles": ["<rootDir>/../test/jest.setup.ts"],
+  "transform": { "^.+\\.(t|j)s$": "ts-jest" },
+  "collectCoverageFrom": ["**/*.(t|j)s"],
+  "coverageDirectory": "../coverage",
+  "testEnvironment": "node"
+}
+```
+
+- [ ] **Step 5: Implement `PrismaService` and `PrismaModule` (with the
+  Postgres driver adapter)**
 
 ```typescript
 // apps/backend/src/prisma/prisma.service.ts
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  constructor() {
+    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+    super({ adapter });
+  }
+
   async onModuleInit() {
     await this.$connect();
   }

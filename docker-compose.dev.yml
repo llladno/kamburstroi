@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: kambyrstroi_dev
       POSTGRES_DB: kambyrstroi
     ports:
-      - "5433:5432"
+      - "55432:5432"
     volumes:
       - kambyrstroi_pg_dev:/var/lib/postgresql
 
