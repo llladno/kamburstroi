@@ -8,6 +8,8 @@
   "scripts": {
     "dev:backend": "pnpm --filter backend dev",
     "test:backend": "pnpm --filter backend test",
-    "test:backend:e2e": "pnpm --filter backend test:e2e"
+    "test:backend:e2e": "pnpm --filter backend test:e2e",
+    "dev:site": "pnpm --filter site dev",
+    "build:site": "pnpm --filter site build"
   }
 }
