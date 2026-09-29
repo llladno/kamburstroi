@@ -1,0 +1,13 @@
+{
+  "name": "kambyrstroi",
+  "private": true,
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "test:backend": "pnpm --filter backend test",
+    "test:backend:e2e": "pnpm --filter backend test:e2e"
+  }
+}

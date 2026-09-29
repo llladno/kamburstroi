@@ -136,7 +136,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - kambyrstroi_pg_dev:/var/lib/postgresql/data
+      - kambyrstroi_pg_dev:/var/lib/postgresql
 
 volumes:
   kambyrstroi_pg_dev:
@@ -3629,7 +3629,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: kambyrstroi
     volumes:
-      - kambyrstroi_pg_data:/var/lib/postgresql/data
+      - kambyrstroi_pg_data:/var/lib/postgresql
 
   backend:
     build:

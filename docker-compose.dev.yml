@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kambyrstroi
+      POSTGRES_PASSWORD: kambyrstroi_dev
+      POSTGRES_DB: kambyrstroi
+    ports:
+      - "5433:5432"
+    volumes:
+      - kambyrstroi_pg_dev:/var/lib/postgresql
+
+volumes:
+  kambyrstroi_pg_dev:
