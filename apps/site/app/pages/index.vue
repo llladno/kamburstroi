@@ -67,6 +67,12 @@ const mockServices = [
   { id: 's2', title: 'Смета до начала работ', description: 'Фиксируем стоимость и сроки в договоре заранее.', order: 1 },
   { id: 's3', title: 'Авторский надзор', description: 'Контролируем качество на каждом этапе работ.', order: 2 },
 ];
+
+const mockAdvantages = [
+  { id: 'a1', title: 'Опыт', description: 'Более 7 лет на рынке ремонта и отделки.', order: 0 },
+  { id: 'a2', title: 'Соблюдение сроков', description: 'Фиксируем этапы и сроки в договоре.', order: 1 },
+  { id: 'a3', title: 'Гарантия на работы', description: '12 месяцев гарантии на все виды работ.', order: 2 },
+];
 </script>
 
 <template>
@@ -75,5 +81,6 @@ const mockServices = [
     <ObjectsSection :objects="mockObjects" />
     <AboutSection :settings="mockSettings" />
     <ServicesTeaserSection :services="mockServices" />
+    <AdvantagesSection :advantages="mockAdvantages" />
   </div>
 </template>
