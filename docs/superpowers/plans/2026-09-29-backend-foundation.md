@@ -1803,10 +1803,13 @@ export class UpdateServiceDto extends PartialType(CreateServiceDto) {}
 ```
 
 `@nestjs/mapped-types` needs installing once (shared by every CRUD module
-from here on):
+from here on). Its `latest` tag jumped straight from the `2.x` line to
+an ESM-only `12.0.0` (skipping a NestJS-11-targeted release entirely) —
+pin `2.1.1`, the last CJS release, same reasoning as `@nestjs/jwt` /
+`@nestjs/passport` in Task 5:
 
 ```bash
-pnpm --filter backend add @nestjs/mapped-types
+pnpm --filter backend add @nestjs/mapped-types@2.1.1
 ```
 
 - [ ] **Step 3: Service (business logic)**
