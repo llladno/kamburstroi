@@ -61,11 +61,19 @@ const mockObjects: ObjectItem[] = [
     ],
   },
 ];
+
+const mockServices = [
+  { id: 's1', title: 'Отделка под ключ', description: 'Полный цикл отделочных работ для квартир и домов.', order: 0 },
+  { id: 's2', title: 'Смета до начала работ', description: 'Фиксируем стоимость и сроки в договоре заранее.', order: 1 },
+  { id: 's3', title: 'Авторский надзор', description: 'Контролируем качество на каждом этапе работ.', order: 2 },
+];
 </script>
 
 <template>
   <div>
     <HeroSection :settings="mockSettings" />
     <ObjectsSection :objects="mockObjects" />
+    <AboutSection :settings="mockSettings" />
+    <ServicesTeaserSection :services="mockServices" />
   </div>
 </template>
