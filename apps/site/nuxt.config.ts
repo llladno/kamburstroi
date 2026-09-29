@@ -5,11 +5,14 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-09-29',
   devtools: { enabled: true },
   devServer: { port: 3001 },
-  modules: ['@nuxt/fonts'],
+  modules: ['@nuxt/fonts', '@nuxtjs/sitemap'],
   components: [{ path: '~/components', pathPrefix: false }],
   css: ['~/assets/css/main.css'],
   vite: {
     plugins: [tailwindcss()],
+  },
+  site: {
+    url: process.env.NUXT_PUBLIC_SITE_URL ?? 'http://localhost:3001',
   },
   runtimeConfig: {
     public: {

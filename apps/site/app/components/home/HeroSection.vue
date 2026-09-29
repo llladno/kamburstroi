@@ -33,7 +33,12 @@ const { open } = useLeadModal();
             </button>
           </div>
 
-          <div class="mt-10 flex gap-3.5">
+          <!-- Desktop: stats live inside the left panel, per DESIGN_SYSTEM.md's
+               "three overlapping statistic cards integrated into the hero"
+               constraint. Hidden on mobile — see the mobile-only block below,
+               which places the same cards after the image per §17's required
+               order (Header → Hero text → CTA → Image → Stats). -->
+          <div class="mt-10 hidden gap-3.5 md:flex">
             <StatCard :value="`${props.settings.yearsOfExperience}+`" label="лет опыта" />
             <StatCard :value="`${props.settings.completedObjectsCount}+`" label="объектов завершили" />
             <StatCard :value="`${props.settings.warrantyMonths} мес.`" label="гарантии" />
@@ -66,6 +71,13 @@ const { open } = useLeadModal();
           </a>
         </div>
       </div>
+    </div>
+
+    <!-- Mobile-only stats row, positioned after the image per DESIGN_SYSTEM.md §17 -->
+    <div class="mt-3 flex gap-3 md:hidden">
+      <StatCard :value="`${props.settings.yearsOfExperience}+`" label="лет опыта" />
+      <StatCard :value="`${props.settings.completedObjectsCount}+`" label="объектов завершили" />
+      <StatCard :value="`${props.settings.warrantyMonths} мес.`" label="гарантии" />
     </div>
   </section>
 </template>
