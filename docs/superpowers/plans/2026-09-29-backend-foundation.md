@@ -126,7 +126,20 @@ insert_final_newline = true
 - [ ] **Step 5: Create `docker-compose.dev.yml`** (local Postgres only —
   the full production compose file with backend/nginx comes in Task 15)
 
+**⚠️ Give it an explicit `name:`.** Task 15's production
+`docker-compose.yml` also defines a `postgres` service. Without an
+explicit top-level `name:` in each file, Compose derives the project
+name from the directory — both files then resolve to the *same*
+project, and since they share the service name `postgres`, running the
+prod file's `up`/`down` silently recreates and can delete the dev
+Postgres container **and its volume** (lost local data). This was
+discovered by actually running Task 15's `docker compose up`/`down`
+against this same directory and finding the dev database gone
+afterwards.
+
 ```yaml
+name: kambyrstroi-dev
+
 services:
   postgres:
     image: postgres:18-alpine
@@ -3857,9 +3870,13 @@ uploads
 *.log
 ```
 
-- [ ] **Step 3: production `docker-compose.yml`** (repo root)
+- [ ] **Step 3: production `docker-compose.yml`** (repo root) — give it
+  its own `name:` too (`kambyrstroi`, distinct from Task 1's
+  `kambyrstroi-dev`) — see the warning in Task 1 Step 5.
 
 ```yaml
+name: kambyrstroi
+
 services:
   postgres:
     image: postgres:18-alpine
