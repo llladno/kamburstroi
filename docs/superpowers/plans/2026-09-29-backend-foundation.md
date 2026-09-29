@@ -3449,13 +3449,45 @@ pnpm --filter backend add grammy
   fault-tolerance (the part with real business-logic risk — a broken
   Telegram call must not throw)**
 
+**⚠️ Correction (discovered during execution):** the test below must
+mock the `grammy` module rather than relying on a missing
+`TELEGRAM_BOT_TOKEN`. Two problems with the naive version: (1) `.env`
+sets `TELEGRAM_BOT_TOKEN=""`, which is falsy, so `TelegramNotifierService`
+constructs with `this.bot = null` and returns **before** ever calling
+`prisma.telegramSubscriber.findMany()` — the test's own assertion that
+`findMany` was called would fail; (2) if you instead give it a real
+truthy token to get past that, `sendMessage` becomes a genuine network
+call to the Telegram API, which is slow and will fail outright in a
+sandboxed/offline test run. Mock `grammy`'s `Bot` class and set a dummy
+token instead — hermetic, fast, and still proves the catch-and-log
+behavior:
+
 ```typescript
 // apps/backend/src/telegram/telegram-notifier.service.spec.ts
 import { Test } from '@nestjs/testing';
-import { TelegramNotifierService } from './telegram-notifier.service';
 import { PrismaService } from '../prisma/prisma.service';
 
+const sendMessageMock = jest.fn().mockRejectedValue(new Error('network error'));
+
+jest.mock('grammy', () => ({
+  Bot: jest.fn().mockImplementation(() => ({
+    api: { sendMessage: sendMessageMock },
+  })),
+}));
+
+import { TelegramNotifierService } from './telegram-notifier.service';
+
 describe('TelegramNotifierService', () => {
+  const originalToken = process.env.TELEGRAM_BOT_TOKEN;
+
+  beforeAll(() => {
+    process.env.TELEGRAM_BOT_TOKEN = 'test-token';
+  });
+
+  afterAll(() => {
+    process.env.TELEGRAM_BOT_TOKEN = originalToken;
+  });
+
   it('does not throw when the bot API call fails', async () => {
     const prismaMock = {
       telegramSubscriber: {
@@ -3471,10 +3503,29 @@ describe('TelegramNotifierService', () => {
     }).compile();
 
     const notifier = moduleRef.get(TelegramNotifierService);
-    // no TELEGRAM_BOT_TOKEN set in the test env -> sendMessage will fail internally;
-    // the important assertion is that notify() itself resolves without throwing
     await expect(notifier.notify('Новая заявка от Иван')).resolves.toBeUndefined();
     expect(prismaMock.telegramSubscriber.findMany).toHaveBeenCalled();
+    expect(sendMessageMock).toHaveBeenCalledWith('123', 'Новая заявка от Иван');
+  });
+
+  it('skips silently when TELEGRAM_BOT_TOKEN is not set', async () => {
+    process.env.TELEGRAM_BOT_TOKEN = '';
+    const prismaMock = {
+      telegramSubscriber: { findMany: jest.fn() },
+    };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        TelegramNotifierService,
+        { provide: PrismaService, useValue: prismaMock },
+      ],
+    }).compile();
+
+    const notifier = moduleRef.get(TelegramNotifierService);
+    await expect(notifier.notify('test')).resolves.toBeUndefined();
+    expect(prismaMock.telegramSubscriber.findMany).not.toHaveBeenCalled();
+
+    process.env.TELEGRAM_BOT_TOKEN = 'test-token';
   });
 });
 ```

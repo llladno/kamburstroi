@@ -12,6 +12,7 @@ import { TeamModule } from './team/team.module';
 import { ObjectsModule } from './objects/objects.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { LeadsModule } from './leads/leads.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { LeadsModule } from './leads/leads.module';
     AdvantagesModule,
     TeamModule,
     ObjectsModule,
+    TelegramModule,
     ReviewsModule,
     LeadsModule,
   ],
