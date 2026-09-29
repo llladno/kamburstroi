@@ -73,6 +73,8 @@ const mockAdvantages = [
   { id: 'a2', title: 'Соблюдение сроков', description: 'Фиксируем этапы и сроки в договоре.', order: 1 },
   { id: 'a3', title: 'Гарантия на работы', description: '12 месяцев гарантии на все виды работ.', order: 2 },
 ];
+
+const { data: reviews } = await useAsyncData('reviews-preview', fetchReviews);
 </script>
 
 <template>
@@ -82,5 +84,6 @@ const mockAdvantages = [
     <AboutSection :settings="mockSettings" />
     <ServicesTeaserSection :services="mockServices" />
     <AdvantagesSection :advantages="mockAdvantages" />
+    <ReviewsSection :reviews="reviews ?? []" />
   </div>
 </template>
