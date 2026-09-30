@@ -16,6 +16,8 @@
   --radius-card: 12px;
   --radius-control: 8px;
 
+  --shadow-card: 0 8px 25px rgba(20, 25, 30, 0.05);
+
   --font-sans: "Manrope", "Onest", "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
