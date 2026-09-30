@@ -10,6 +10,9 @@
     "test:backend": "pnpm --filter backend test",
     "test:backend:e2e": "pnpm --filter backend test:e2e",
     "dev:site": "pnpm --filter site dev",
-    "build:site": "pnpm --filter site build"
+    "build:site": "pnpm --filter site build",
+    "dev:admin": "pnpm --filter admin dev",
+    "build:admin": "pnpm --filter admin build",
+    "test:admin": "pnpm --filter admin test"
   }
 }

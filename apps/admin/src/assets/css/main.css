@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #ffffff;
+  --color-surface: #f3f4f5;
+  --color-card: #fafafb;
+  --color-text: #17191b;
+  --color-text-secondary: #45494d;
+  --color-text-muted: #92969a;
+  --color-primary: #222528;
+  --color-primary-text: #ffffff;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-danger: #b3261e;
+  --color-success: #1e6b3c;
+
+  --radius-card: 12px;
+  --radius-control: 8px;
+
+  --font-sans: "Manrope", "Onest", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-text font-sans antialiased;
+  }
+}
