@@ -1,7 +1,7 @@
 # Kambyrstroi
 
 Монорепо: `apps/backend` (NestJS API + Telegram-бот), `apps/site`
-(Nuxt, публичный сайт), `apps/admin` (Vue admin, добавится в Plan 3).
+(Nuxt, публичный сайт), `apps/admin` (Vue 3 + Vite SPA, админка).
 
 ## Разработка
 
@@ -22,14 +22,28 @@ http://localhost:3000/api/health.
 
 Сайт доступен на http://localhost:3001.
 
+В третьем терминале — админка:
+
+    cp apps/admin/.env.example apps/admin/.env
+    pnpm dev:admin
+
+Админка доступна на http://localhost:3002. Логин/пароль — значения
+`ADMIN_LOGIN`/`ADMIN_PASSWORD` из `apps/backend/.env` (сид создаётся
+командой `prisma db seed` выше).
+
 ## Тесты
 
     pnpm test:backend
     pnpm test:backend:e2e
+    pnpm test:admin
 
 Для сайта — проверка типов (без отдельного test runner, см. спеку):
 
     pnpm --filter site exec nuxi typecheck
+
+Для админки — проверка типов:
+
+    pnpm --filter admin typecheck
 
 ## Продакшн (черновой прогон локально)
 
@@ -42,3 +56,8 @@ Postgres для разработки) используют разные имен
 (`kambyrstroi` и `kambyrstroi-dev`) — не переименовывайте их без
 необходимости, иначе `docker compose down` одного файла может задеть
 контейнеры другого.
+
+Админка не имеет отдельного контейнера — её статическая сборка
+запекается в образ `nginx` (см. `nginx/Dockerfile`) и раздаётся тем же
+контейнером, что проксирует сайт и API, по адресу
+`admin.<DOMAIN>` (см. `nginx/nginx.conf`).

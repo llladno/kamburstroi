@@ -44,7 +44,11 @@ services:
       NITRO_PORT: 3000
 
   nginx:
-    image: nginx:1.27-alpine
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+      args:
+        VITE_API_BASE: https://api.${DOMAIN}/api
     restart: unless-stopped
     depends_on:
       - backend
