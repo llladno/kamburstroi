@@ -5,31 +5,28 @@
 
 ## Разработка
 
+Первый запуск (один раз — поднимает Postgres, применяет миграции и
+создаёт админа):
+
     pnpm install
     docker compose -f docker-compose.dev.yml up -d
     cp apps/backend/.env.example apps/backend/.env
     pnpm --filter backend exec prisma migrate dev
     pnpm --filter backend exec prisma db seed
-    pnpm dev:backend
 
-API доступен на http://localhost:3000/api, health-check на
-http://localhost:3000/api/health.
+Дальше — одна команда поднимает Postgres (если ещё не поднят) и все
+три dev-сервера разом (backend/site/admin, вывод с цветными префиксами
+в одном терминале, `Ctrl+C` останавливает всё сразу):
 
-В отдельном терминале — сайт:
+    pnpm dev
 
-    cp apps/site/.env.example apps/site/.env
-    pnpm dev:site
+- API: http://localhost:3000/api, health-check — http://localhost:3000/api/health
+- Сайт: http://localhost:3001
+- Админка: http://localhost:3002 — логин/пароль: `ADMIN_LOGIN`/`ADMIN_PASSWORD`
+  из `apps/backend/.env` (сид создаётся командой `prisma db seed` выше)
 
-Сайт доступен на http://localhost:3001.
-
-В третьем терминале — админка:
-
-    cp apps/admin/.env.example apps/admin/.env
-    pnpm dev:admin
-
-Админка доступна на http://localhost:3002. Логин/пароль — значения
-`ADMIN_LOGIN`/`ADMIN_PASSWORD` из `apps/backend/.env` (сид создаётся
-командой `prisma db seed` выше).
+Если нужен только один сервис — `pnpm dev:backend` / `pnpm dev:site` /
+`pnpm dev:admin` по отдельности, как раньше.
 
 ## Тесты
 
