@@ -47,7 +47,7 @@ function onLogout() {
       </button>
     </aside>
     <main class="flex-1 bg-surface p-8">
-      <router-view />
+      <router-view :key="$route.fullPath" />
     </main>
     <ToastHost />
   </div>
