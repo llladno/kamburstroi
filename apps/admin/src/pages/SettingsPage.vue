@@ -2,12 +2,16 @@
 import { onMounted, reactive, ref } from 'vue';
 import { api, ApiError } from '../lib/api';
 import { useToast } from '../composables/useToast';
+import ImageUploader from '../components/ImageUploader.vue';
 import type { SiteSettings } from '../types/api';
 
 const form = reactive<Omit<SiteSettings, 'updatedAt'>>({
   heroTitle: '',
   heroSubtitle: '',
   aboutText: '',
+  foundingYear: 0,
+  specialization: '',
+  aboutPhotoUrl: '',
   yearsOfExperience: 0,
   completedObjectsCount: 0,
   warrantyMonths: 0,
@@ -52,7 +56,26 @@ async function onSubmit() {
 
     <fieldset class="mt-4 flex flex-col gap-3 rounded-card bg-card p-4">
       <legend class="text-sm font-medium text-text-secondary">О компании</legend>
-      <textarea v-model="form.aboutText" placeholder="Текст о компании" rows="4" class="rounded-control border border-border px-3 py-2" />
+      <textarea v-model="form.aboutText" placeholder="Текст о компании (абзацы — через пустую строку)" rows="6" class="rounded-control border border-border px-3 py-2" />
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-sm text-text-secondary">
+          Год основания
+          <input v-model.number="form.foundingYear" type="number" min="0" class="mt-1 w-full rounded-control border border-border px-3 py-2" />
+        </label>
+        <label class="text-sm text-text-secondary">
+          Специализация
+          <input v-model="form.specialization" placeholder="Например, отделка под ключ" class="mt-1 w-full rounded-control border border-border px-3 py-2" />
+        </label>
+      </div>
+      <div>
+        <ImageUploader @uploaded="form.aboutPhotoUrl = $event" />
+        <img
+          v-if="form.aboutPhotoUrl"
+          :src="form.aboutPhotoUrl"
+          alt=""
+          class="mt-3 h-40 w-full rounded-control object-cover"
+        />
+      </div>
       <div class="grid grid-cols-3 gap-3">
         <label class="text-sm text-text-secondary">
           Лет опыта

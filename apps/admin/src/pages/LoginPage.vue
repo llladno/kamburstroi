@@ -28,7 +28,7 @@ async function onSubmit() {
 <template>
   <div class="flex min-h-screen items-center justify-center bg-surface px-4">
     <form class="w-full max-w-sm rounded-card bg-bg p-8 shadow-lg" @submit.prevent="onSubmit">
-      <h1 class="text-xl font-semibold text-text">Kambyrstroi — вход</h1>
+      <h1 class="text-xl font-semibold text-text">КамбурСтрой — вход</h1>
       <label class="mt-6 block text-sm text-text-secondary">
         Логин
         <input

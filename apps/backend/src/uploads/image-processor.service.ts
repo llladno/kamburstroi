@@ -16,7 +16,8 @@ export class ImageProcessorService {
     const outputPath = path.join(uploadsDir, filename);
 
     await sharp(buffer)
-      .resize({ width: MAX_WIDTH, withoutEnlargement: true })
+      .rotate()
+      .resize({ width: MAX_WIDTH, height: MAX_WIDTH, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 82 })
       .toFile(outputPath);
 

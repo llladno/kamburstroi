@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import ButtonComponent from '~/components/button/ButtonComponent.vue';
+import CheckboxComponent from '~/components/form/CheckboxComponent.vue';
+
 const props = defineProps<{ isOpen: boolean }>();
 const emit = defineEmits<{ close: []; submitted: [] }>();
 
@@ -33,11 +36,13 @@ async function handleSubmit() {
 
 <template>
   <Teleport to="body">
+    <Transition name="modal-overlay">
     <div
       v-if="props.isOpen"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       @click.self="emit('close')"
     >
+      <Transition name="modal-panel" appear>
       <div class="bg-card rounded-panel w-full max-w-md p-8 shadow-floating">
         <h2 class="text-text text-xl font-medium">Оставить отзыв</h2>
 
@@ -47,7 +52,7 @@ async function handleSubmit() {
             required
             type="text"
             placeholder="Имя"
-            class="border-border rounded-control border px-4 py-3 text-sm"
+            class="ui-input rounded-control px-4 py-3 text-sm"
           />
 
           <div class="flex gap-1 text-2xl text-amber-500" role="radiogroup" aria-label="Оценка">
@@ -55,6 +60,7 @@ async function handleSubmit() {
               v-for="star in 5"
               :key="star"
               type="button"
+              class="hover-pop"
               :aria-label="`${star} из 5`"
               @click="rating = star"
             >
@@ -67,37 +73,28 @@ async function handleSubmit() {
             required
             placeholder="Ваш отзыв"
             rows="4"
-            class="border-border rounded-card border px-4 py-3 text-sm"
+            class="ui-input rounded-card px-4 py-3 text-sm"
           />
 
-          <label class="text-text-muted flex items-start gap-2 text-xs">
-            <input v-model="consent" type="checkbox" class="mt-0.5" />
-            <span>
-              Согласен(на) на
-              <NuxtLink to="/privacy" class="underline">обработку персональных данных</NuxtLink>
-            </span>
-          </label>
+          <CheckboxComponent v-model="consent" class="text-text-muted text-xs">
+            Согласен(на) на
+            <NuxtLink to="/privacy" class="hover:text-accent underline transition-colors">обработку персональных данных</NuxtLink>
+          </CheckboxComponent>
 
           <p v-if="errorMessage" class="text-xs text-red-600">{{ errorMessage }}</p>
 
           <div class="mt-2 flex gap-3">
-            <button
-              type="button"
-              class="border-border rounded-control flex-1 border px-6 py-3 text-sm"
-              @click="emit('close')"
-            >
+            <ButtonComponent type="button" variant="outline" class="flex-1" @click="emit('close')">
               Отмена
-            </button>
-            <button
-              type="submit"
-              :disabled="isSubmitting"
-              class="bg-primary text-primary-text rounded-control flex-1 px-6 py-3 text-sm font-medium disabled:opacity-60"
-            >
-              {{ isSubmitting ? 'Отправляем…' : 'Отправить' }}
-            </button>
+            </ButtonComponent>
+            <ButtonComponent type="submit" class="flex-1" :loading="isSubmitting">
+              Отправить
+            </ButtonComponent>
           </div>
         </form>
       </div>
+      </Transition>
     </div>
+    </Transition>
   </Teleport>
 </template>

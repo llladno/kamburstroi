@@ -32,10 +32,19 @@ export interface Advantage {
   order: number;
 }
 
+export interface HeroSlide {
+  id: string;
+  imageUrl: string;
+  order: number;
+}
+
 export interface SiteSettings {
   heroTitle: string;
   heroSubtitle: string;
   aboutText: string;
+  foundingYear: number;
+  specialization: string;
+  aboutPhotoUrl: string;
   yearsOfExperience: number;
   completedObjectsCount: number;
   warrantyMonths: number;

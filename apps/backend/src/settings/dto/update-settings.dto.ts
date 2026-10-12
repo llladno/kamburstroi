@@ -4,6 +4,9 @@ export class UpdateSettingsDto {
   @IsOptional() @IsString() heroTitle?: string;
   @IsOptional() @IsString() heroSubtitle?: string;
   @IsOptional() @IsString() aboutText?: string;
+  @IsOptional() @IsInt() @Min(0) foundingYear?: number;
+  @IsOptional() @IsString() specialization?: string;
+  @IsOptional() @IsString() aboutPhotoUrl?: string;
   @IsOptional() @IsInt() @Min(0) yearsOfExperience?: number;
   @IsOptional() @IsInt() @Min(0) completedObjectsCount?: number;
   @IsOptional() @IsInt() @Min(0) warrantyMonths?: number;

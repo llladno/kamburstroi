@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useSeoMeta({ title: 'Политика обработки персональных данных — Kambyrstroi' });
+useSeoMeta({ title: 'Политика обработки персональных данных — КамбурСтрой' });
 </script>
 
 <template>

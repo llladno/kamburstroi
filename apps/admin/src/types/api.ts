@@ -54,6 +54,21 @@ export type Advantage = Service;
 export type CreateAdvantagePayload = CreateServicePayload;
 export type UpdateAdvantagePayload = UpdateServicePayload;
 
+export interface HeroSlide {
+  id: string;
+  imageUrl: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateHeroSlidePayload {
+  imageUrl: string;
+  order?: number;
+}
+
+export type UpdateHeroSlidePayload = Partial<CreateHeroSlidePayload>;
+
 export interface TeamMember {
   id: string;
   name: string;
@@ -77,6 +92,9 @@ export interface SiteSettings {
   heroTitle: string;
   heroSubtitle: string;
   aboutText: string;
+  foundingYear: number;
+  specialization: string;
+  aboutPhotoUrl: string;
   yearsOfExperience: number;
   completedObjectsCount: number;
   warrantyMonths: number;

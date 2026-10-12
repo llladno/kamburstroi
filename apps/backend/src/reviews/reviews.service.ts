@@ -27,9 +27,7 @@ export class ReviewsService {
     const review = await this.prisma.review.create({
       data: { ...dto, status: ReviewStatus.pending },
     });
-    await this.telegramNotifier.notify(
-      `Новый отзыв от ${review.name} (${review.rating}★):\n${review.text}`,
-    );
+    await this.telegramNotifier.notifyNewReview(review);
     return review;
   }
 

@@ -16,6 +16,7 @@ const router = createRouter({
         { path: 'objects/:id', name: 'object-edit', component: () => import('../pages/ObjectEditPage.vue') },
         { path: 'services', name: 'services', component: () => import('../pages/ServicesPage.vue') },
         { path: 'advantages', name: 'advantages', component: () => import('../pages/AdvantagesPage.vue') },
+        { path: 'hero-slides', name: 'hero-slides', component: () => import('../pages/HeroSlidesPage.vue') },
         { path: 'team', name: 'team', component: () => import('../pages/TeamPage.vue') },
         { path: 'reviews', name: 'reviews', component: () => import('../pages/ReviewsPage.vue') },
         { path: 'leads', name: 'leads', component: () => import('../pages/LeadsPage.vue') },

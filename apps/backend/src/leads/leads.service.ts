@@ -17,9 +17,7 @@ export class LeadsService {
 
   async create(dto: CreateLeadDto) {
     const lead = await this.prisma.lead.create({ data: dto });
-    await this.telegramNotifier.notify(
-      `Новая заявка от ${lead.name}, тел. ${lead.phone}${lead.comment ? `\nКомментарий: ${lead.comment}` : ''}`,
-    );
+    await this.telegramNotifier.notifyNewLead(lead);
     return lead;
   }
 

@@ -1,4 +1,4 @@
-# Kambyrstroi
+# КамбурСтрой
 
 Монорепо: `apps/backend` (NestJS API + Telegram-бот), `apps/site`
 (Nuxt, публичный сайт), `apps/admin` (Vue 3 + Vite SPA, админка).

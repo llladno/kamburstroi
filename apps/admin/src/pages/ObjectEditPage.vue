@@ -64,16 +64,18 @@ async function onSubmit() {
   }
 }
 
-async function onImageUploaded(url: string) {
+async function onImagesUploaded(urls: string[]) {
   if (!savedId.value) return;
-  try {
-    const image = await api.post<ObjectImage>(`/admin/objects/${savedId.value}/images`, {
-      url,
-      isCover: images.value.length === 0,
-    });
-    images.value = [...images.value, image];
-  } catch (error) {
-    push(error instanceof ApiError ? error.message : 'Не удалось прикрепить фото');
+  for (const url of urls) {
+    try {
+      const image = await api.post<ObjectImage>(`/admin/objects/${savedId.value}/images`, {
+        url,
+        isCover: images.value.length === 0,
+      });
+      images.value = [...images.value, image];
+    } catch (error) {
+      push(error instanceof ApiError ? error.message : 'Не удалось прикрепить фото');
+    }
   }
 }
 
@@ -152,7 +154,7 @@ async function onConfirmDeleteImage() {
 
     <section v-if="savedId" class="mt-8">
       <h2 class="text-lg font-semibold text-text">Фото объекта</h2>
-      <ImageUploader class="mt-3" @uploaded="onImageUploaded" />
+      <ImageUploader class="mt-3" multiple @uploaded-many="onImagesUploaded" />
       <OrderableList :items="images" class="mt-4" @reorder="onReorderImages">
         <template #default="{ item }">
           <div class="flex items-center justify-between gap-4">

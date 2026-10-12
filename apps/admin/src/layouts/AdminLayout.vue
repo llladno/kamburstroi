@@ -11,6 +11,7 @@ const links = [
   { to: '/objects', label: 'Объекты' },
   { to: '/services', label: 'Услуги' },
   { to: '/advantages', label: 'Преимущества' },
+  { to: '/hero-slides', label: 'Слайды главной' },
   { to: '/team', label: 'Команда' },
   { to: '/reviews', label: 'Отзывы' },
   { to: '/leads', label: 'Заявки' },
@@ -26,7 +27,7 @@ function onLogout() {
 <template>
   <div class="flex min-h-screen">
     <aside class="w-56 shrink-0 border-r border-border bg-bg p-4">
-      <div class="mb-6 text-lg font-semibold text-text">Kambyrstroi</div>
+      <div class="mb-6 text-lg font-semibold text-text">КамбурСтрой</div>
       <nav class="flex flex-col gap-1">
         <router-link
           v-for="link in links"

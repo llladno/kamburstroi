@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-09-29',
   devtools: { enabled: true },
   devServer: { port: 3001 },
-  modules: ['@nuxt/fonts', '@nuxtjs/sitemap'],
+  modules: ['@nuxt/fonts', '@nuxtjs/sitemap', '@vueuse/motion/nuxt'],
   components: [{ path: '~/components', pathPrefix: false }],
   css: ['~/assets/css/main.css'],
   vite: {

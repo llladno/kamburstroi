@@ -8,6 +8,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { SettingsModule } from './settings/settings.module';
 import { ServicesModule } from './services/services.module';
 import { AdvantagesModule } from './advantages/advantages.module';
+import { HeroSlidesModule } from './hero-slides/hero-slides.module';
 import { TeamModule } from './team/team.module';
 import { ObjectsModule } from './objects/objects.module';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -28,6 +29,7 @@ import { TelegramModule } from './telegram/telegram.module';
     SettingsModule,
     ServicesModule,
     AdvantagesModule,
+    HeroSlidesModule,
     TeamModule,
     ObjectsModule,
     TelegramModule,

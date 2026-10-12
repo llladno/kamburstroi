@@ -1,36 +1,57 @@
 <script setup lang="ts">
-import type { SiteSettings } from '~/types/api';
+import type { HeroSlide, SiteSettings } from '~/types/api';
+import ButtonComponent from '~/components/button/ButtonComponent.vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/effect-fade';
+import 'swiper/css/pagination';
 
-const props = defineProps<{ settings: SiteSettings }>();
+const props = defineProps<{ settings: SiteSettings; slides: HeroSlide[] }>();
 const { open } = useLeadModal();
+
+const fallbackImage =
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200';
+
+const textMotion = useRevealMotion();
+const imageMotion = useRevealMotion(120);
 </script>
 
 <template>
   <section class="p-2 md:p-3">
-    <div class="grid gap-3 md:grid-cols-[1.3fr_1fr]">
+    <div class="mx-auto grid max-w-[1600px] gap-3 md:grid-cols-[1.3fr_1fr] md:grid-rows-[minmax(640px,auto)]">
       <!-- Left panel -->
       <div
-        class="rounded-hero relative min-h-[500px] overflow-hidden p-8 md:min-h-[688px] md:p-12"
+        v-motion
+        class="rounded-hero relative min-h-[460px] overflow-hidden p-6 sm:p-8 md:min-h-0 md:p-12"
         style="background: radial-gradient(circle at 70% 20%, rgba(255,255,255,.9), transparent 42%), radial-gradient(circle at 20% 70%, rgba(255,255,255,.45), transparent 40%), #F3F4F5;"
+        :initial="textMotion.initial"
+        :enter="textMotion.enter"
       >
         <div class="flex h-full flex-col justify-between">
           <div class="max-w-[480px]">
-            <h1 class="text-text text-3xl leading-tight font-medium tracking-tight md:text-4xl">
+            <span class="text-accent inline-flex items-center gap-2 text-xs font-semibold tracking-[0.18em] uppercase">
+              <span class="bg-accent h-1.5 w-1.5 rounded-full" />
+              {{ props.settings.specialization || 'Строительная компания' }}
+            </span>
+            <h1 class="text-text mt-4 text-4xl leading-[1.08] font-semibold tracking-[-0.02em] md:text-5xl">
               {{ props.settings.heroTitle || 'Отделка квартиры под ключ' }}
             </h1>
-            <p class="text-text-secondary mt-4 text-base leading-relaxed">
+            <p class="text-text-secondary mt-5 max-w-[420px] text-base leading-relaxed md:text-lg">
               {{
                 props.settings.heroSubtitle ||
                 'Выполним весь комплекс работ — от черновой подготовки до финального монтажа.'
               }}
             </p>
-            <button
-              class="bg-primary text-primary-text rounded-control mt-10 flex items-center gap-2 px-8 py-4 text-sm font-medium"
+            <ButtonComponent
+              size="lg"
+              arrow
+              class="mt-10"
               @click="open"
             >
               Рассчитать стоимость
-              <span aria-hidden="true">↘</span>
-            </button>
+            </ButtonComponent>
+
           </div>
 
           <!-- Desktop: stats live inside the left panel, per DESIGN_SYSTEM.md's
@@ -47,28 +68,66 @@ const { open } = useLeadModal();
       </div>
 
       <!-- Right panel -->
-      <div class="rounded-hero relative min-h-[300px] overflow-hidden md:min-h-[688px]">
-        <img
-          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200"
-          alt="Премиальный ремонт квартиры"
-          class="h-full w-full object-cover"
-          style="object-position: 55% center;"
+      <div
+        v-motion
+        class="rounded-hero relative h-[340px] overflow-hidden bg-neutral-200 sm:h-[440px] md:h-auto"
+        :initial="imageMotion.initial"
+        :enter="imageMotion.enter"
+      >
+        <!-- The media frame is absolutely positioned so a photo's intrinsic size
+             can never stretch the hero; height comes only from the panel above. -->
+        <div class="absolute inset-0">
+        <ClientOnly>
+          <Swiper
+            v-if="props.slides.length > 0"
+            class="h-full w-full"
+            :modules="[Autoplay, EffectFade, Pagination]"
+            effect="fade"
+            :fade-effect="{ crossFade: true }"
+            :autoplay="{ delay: 5000, disableOnInteraction: false }"
+            :pagination="props.slides.length > 1 ? { clickable: true } : false"
+            :loop="props.slides.length > 1"
+          >
+            <SwiperSlide v-for="slide in props.slides" :key="slide.id">
+              <img
+                :src="slide.imageUrl"
+                alt="Премиальный ремонт квартиры"
+                class="h-full w-full object-cover"
+                style="object-position: 55% center;"
+              />
+            </SwiperSlide>
+          </Swiper>
+          <img
+            v-else
+            :src="fallbackImage"
+            alt="Премиальный ремонт квартиры"
+            class="h-full w-full object-cover"
+            style="object-position: 55% center;"
+          />
+
+          <template #fallback>
+            <img
+              :src="props.slides[0]?.imageUrl || fallbackImage"
+              alt="Премиальный ремонт квартиры"
+              class="h-full w-full object-cover"
+              style="object-position: 55% center;"
+            />
+          </template>
+        </ClientOnly>
+        </div>
+
+        <div
+          class="pointer-events-none absolute inset-x-0 top-0 z-[5] h-32 bg-gradient-to-b from-black/25 to-transparent"
+          aria-hidden="true"
         />
 
-        <div class="absolute top-12 left-13 flex gap-2.5">
-          <button
-            class="bg-glass rounded-control flex h-10 items-center gap-2 px-4 text-xs font-medium backdrop-blur-md"
-            @click="open"
-          >
+        <div class="pointer-events-none absolute top-4 right-4 left-4 z-10 flex flex-wrap gap-2.5 md:top-12 md:right-auto md:left-13">
+          <ButtonComponent variant="secondary" class="pointer-events-auto" @click="open">
             ↘ Оставить заявку
-          </button>
-          <a
-            v-if="props.settings.phone"
-            :href="`tel:${props.settings.phone.replace(/[^+\d]/g, '')}`"
-            class="bg-glass rounded-control flex h-10 items-center gap-2 px-4 text-xs font-medium backdrop-blur-md"
-          >
+          </ButtonComponent>
+          <ButtonComponent v-if="props.settings.phone" variant="secondary" class="pointer-events-auto" :href="`tel:${props.settings.phone.replace(/[^+\d]/g, '')}`">
             ☎ {{ props.settings.phone }}
-          </a>
+          </ButtonComponent>
         </div>
       </div>
     </div>
@@ -81,3 +140,18 @@ const { open } = useLeadModal();
     </div>
   </section>
 </template>
+
+<style scoped>
+:deep(.swiper-pagination) {
+  bottom: 20px !important;
+}
+
+:deep(.swiper-pagination-bullet) {
+  background: #ffffff;
+  opacity: 0.6;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  opacity: 1;
+}
+</style>

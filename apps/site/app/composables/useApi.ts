@@ -2,6 +2,7 @@ import type {
   Advantage,
   CreateLeadPayload,
   CreateReviewPayload,
+  HeroSlide,
   ObjectItem,
   Review,
   Service,
@@ -22,6 +23,10 @@ export function fetchServices() {
 
 export function fetchAdvantages() {
   return $fetch<Advantage[]>(`${apiBase()}/advantages`);
+}
+
+export function fetchHeroSlides() {
+  return $fetch<HeroSlide[]>(`${apiBase()}/hero-slides`);
 }
 
 export function fetchObjects() {
