@@ -18,7 +18,7 @@ const navLinks = [
   <header class="bg-bg/80 sticky top-0 z-40 backdrop-blur-md">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
       <NuxtLink to="/" class="flex items-center gap-2.5" aria-label="КамбурСтрой — на главную">
-        <img src="/logo.jpg" alt="КамбурСтрой" class="h-9 w-auto rounded-md" />
+        <img src="/logo.jpg" alt="КамбурСтрой" class="h-14 w-auto rounded-md" />
         <span class="text-text hidden text-base font-medium sm:inline">КамбурСтрой</span>
       </NuxtLink>
 
