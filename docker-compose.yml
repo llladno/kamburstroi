@@ -25,6 +25,7 @@ services:
       ADMIN_LOGIN: ${ADMIN_LOGIN}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_PROXY_URL: ${TELEGRAM_PROXY_URL:-}
       ADMIN_BASE_URL: https://admin.${DOMAIN}
       UPLOADS_DIR: /app/uploads
       PUBLIC_UPLOADS_BASE_URL: https://api.${DOMAIN}/uploads
