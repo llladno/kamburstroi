@@ -23,7 +23,6 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'ru' },
       title: 'КамбурСтрой — ремонт и строительство под ключ',
-      titleTemplate: '%s | КамбурСтрой',
       meta: [
         {
           name: 'description',
