@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Bot } from 'grammy';
 import { PrismaService } from '../prisma/prisma.service';
+import { getTelegramClientOptions } from './proxy-agent';
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -26,7 +27,7 @@ export class TelegramNotifierService {
 
   constructor(private readonly prisma: PrismaService) {
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    this.bot = token ? new Bot(token) : null;
+    this.bot = token ? new Bot(token, { client: getTelegramClientOptions() }) : null;
     this.adminBaseUrl = (process.env.ADMIN_BASE_URL ?? 'http://localhost:3002').replace(/\/$/, '');
   }
 

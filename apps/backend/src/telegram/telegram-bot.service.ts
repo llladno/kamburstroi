@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Bot } from 'grammy';
 import { PrismaService } from '../prisma/prisma.service';
+import { getTelegramClientOptions } from './proxy-agent';
 
 @Injectable()
 export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
@@ -16,7 +17,7 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    this.bot = new Bot(token);
+    this.bot = new Bot(token, { client: getTelegramClientOptions() });
 
     this.bot.command('start', async (ctx) => {
       const chatId = String(ctx.chat.id);

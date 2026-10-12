@@ -93,6 +93,9 @@ importers:
       grammy:
         specifier: ^1.46.0
         version: 1.46.0
+      https-proxy-agent:
+        specifier: ^7.0.6
+        version: 7.0.6
       multer:
         specifier: ^2.4.0
         version: 2.4.0
