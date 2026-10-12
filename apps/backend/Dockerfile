@@ -5,6 +5,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/backend/package.json apps/backend/package.json
 RUN pnpm install --frozen-lockfile --filter backend...
 COPY apps/backend apps/backend
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN pnpm --filter backend exec prisma generate
 RUN pnpm --filter backend build
 
