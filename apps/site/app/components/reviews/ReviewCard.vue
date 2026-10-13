@@ -26,7 +26,7 @@ const reveal = useRevealMotion((props.index % 6) * 70);
       v-if="review.photoUrl"
       :src="review.photoUrl"
       alt="Фото к отзыву"
-      class="mt-3 h-40 w-full rounded-control object-cover"
+      class="rounded-card mt-3 h-40 w-full object-cover"
     />
     <p
       class="custom-scroll text-text-secondary mt-3 max-h-[140px] overflow-y-auto pr-2 text-sm leading-relaxed break-words"

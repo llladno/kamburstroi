@@ -164,6 +164,16 @@ textarea.ui-input {
   border-radius: 999px;
 }
 
+/* Hides the scrollbar on horizontal sliders (e.g. the reviews track) while keeping it scrollable/swipeable. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /*
  * Shared modal animation classes — a soft backdrop fade plus a
  * scale/rise for the panel. Reused by every Teleport-based modal
