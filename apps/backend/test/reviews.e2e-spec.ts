@@ -5,6 +5,11 @@ import * as bcrypt from 'bcryptjs';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 
+const ONE_BY_ONE_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+  'base64',
+);
+
 describe('Reviews (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -55,6 +60,31 @@ describe('Reviews (e2e)', () => {
     const afterApproval = await request(app.getHttpServer()).get('/api/reviews').expect(200);
     expect(afterApproval.body).toHaveLength(1);
     expect(afterApproval.body[0].name).toBe('Александр');
+  });
+
+  it('accepts an anonymous photo upload and returns a usable URL for the review submission', async () => {
+    const uploadRes = await request(app.getHttpServer())
+      .post('/api/reviews/photo')
+      .attach('file', ONE_BY_ONE_PNG, 'tiny.png')
+      .expect(201);
+
+    expect(uploadRes.body.url).toMatch(/^https?:\/\//);
+
+    const submitRes = await request(app.getHttpServer())
+      .post('/api/reviews')
+      .send({
+        name: 'Светлана',
+        rating: 5,
+        text: 'Прикладываю фото результата',
+        photoUrl: uploadRes.body.url,
+      })
+      .expect(201);
+
+    expect(submitRes.body.photoUrl).toBe(uploadRes.body.url);
+  });
+
+  it('rejects a photo upload with no file attached', () => {
+    return request(app.getHttpServer()).post('/api/reviews/photo').expect(400);
   });
 
   it('rejects invalid ratings', () => {

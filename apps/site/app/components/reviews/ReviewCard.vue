@@ -22,6 +22,12 @@ const reveal = useRevealMotion((props.index % 6) * 70);
     <p class="text-sm tracking-widest text-amber-500" aria-hidden="true">
       {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
     </p>
+    <img
+      v-if="review.photoUrl"
+      :src="review.photoUrl"
+      alt="Фото к отзыву"
+      class="mt-3 h-40 w-full rounded-control object-cover"
+    />
     <p
       class="custom-scroll text-text-secondary mt-3 max-h-[140px] overflow-y-auto pr-2 text-sm leading-relaxed break-words"
     >

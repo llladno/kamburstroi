@@ -45,6 +45,15 @@ export function submitReview(payload: CreateReviewPayload) {
   return $fetch<Review>(`${apiBase()}/reviews`, { method: 'POST', body: payload });
 }
 
+export function uploadReviewPhoto(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+  return $fetch<{ url: string }>(`${apiBase()}/reviews/photo`, {
+    method: 'POST',
+    body: formData,
+  });
+}
+
 export function submitLead(payload: CreateLeadPayload) {
   return $fetch(`${apiBase()}/leads`, { method: 'POST', body: payload });
 }
